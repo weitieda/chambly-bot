@@ -34,7 +34,7 @@ struct NewsMonitor {
                 let newArticles = rssFeedItems.compactMap { Article(title: $0.title, link: $0.link) }
                 if let prevArticles = prevArticles {
                     let diff = newArticles.diff(from: prevArticles)
-                    print(diff.isEmpty ? "No update" : "Get new ones")
+                    print(diff.isEmpty ? "[News] No new ones" : "[News] Get new one")
                     diff.forEach { pushToWeChat(title: $0.title, description: $0.link) }
                 }
                 prevArticles = newArticles

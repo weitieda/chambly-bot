@@ -26,16 +26,30 @@ struct WeatherMonitor {
                 guard let html = String(data: data, encoding: .utf8) else {return}
                 do {
                     let doc = try SwiftSoup.parse(html)
-                    let warnings = try doc.select("[class=col-xs-10 text-center]").array().compactMap{ try? $0.text() }
-                    guard let newWarning = warnings.first else {return}
-                    if let prevWarning = prevWarning {
-                        if prevWarning != newWarning {
+                    
+                    let warning = try doc.select("[class=col-xs-10 text-center]").array().compactMap{ try? $0.text() }.first
+                    
+                    if let newWarning = warning {
+                        if let previousWarning = self.prevWarning {
+                            if newWarning != previousWarning {
+                                pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
+                                print("prev: \(previousWarning), now: \(newWarning)")
+                                self.prevWarning = newWarning
+                            }
+                        } else {
+                            print("new warning: \(newWarning)")
                             pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
                             self.prevWarning = newWarning
                         }
                     } else {
-                        pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
-                        self.prevWarning = newWarning
+                        if let previousWarning = self.prevWarning {
+                            print("\(previousWarning) is gone.")
+                            pushToWeChat(title: previousWarning + " 解除了" , description: "")
+                            prevWarning = nil
+                        } else {
+                            print("nothing")
+                            prevWarning = nil
+                        }
                     }
                 } catch {
                     print(error)
