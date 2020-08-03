@@ -19,8 +19,8 @@ struct WeatherMonitor {
     static var prevWarning: String?
     
     static func start() {
-        let twentyMinutes: TimeInterval = 60 * 20
-        timer = ScheduleTimer(timeInterval: twentyMinutes) {
+//        let twentyMinutes: TimeInterval = 60 * 20
+        timer = ScheduleTimer(timeInterval: 60) {
             URLSession.shared.dataTask(with: weatherURL) { (data, response, error) in
                 guard let data = data else {return}
                 guard let html = String(data: data, encoding: .utf8) else {return}
@@ -32,8 +32,8 @@ struct WeatherMonitor {
                     if let newWarning = warning {
                         if let previousWarning = self.prevWarning {
                             if newWarning != previousWarning {
-                                pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
                                 print("prev: \(previousWarning), now: \(newWarning)")
+                                pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
                                 self.prevWarning = newWarning
                             }
                         } else {
@@ -41,16 +41,17 @@ struct WeatherMonitor {
                             pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
                             self.prevWarning = newWarning
                         }
-                    } else {
-                        if let previousWarning = self.prevWarning {
-                            print("\(previousWarning) is gone.")
-                            pushToWeChat(title: previousWarning + " 解除了" , description: "")
-                            prevWarning = nil
-                        } else {
-                            print("nothing")
-                            prevWarning = nil
-                        }
                     }
+//                    else {
+//                        if let previousWarning = self.prevWarning {
+//                            print("\(previousWarning) is gone.")
+//                            pushToWeChat(title: previousWarning + " 解除了" , description: "")
+//                            prevWarning = nil
+//                        } else {
+//                            print("nothing")
+//                            prevWarning = nil
+//                        }
+//                    }
                 } catch {
                     print(error)
                 }
