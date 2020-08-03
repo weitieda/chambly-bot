@@ -19,8 +19,8 @@ struct WeatherMonitor {
     static var prevWarning: String?
     
     static func start() {
-//        let twentyMinutes: TimeInterval = 60 * 20
-        timer = ScheduleTimer(timeInterval: 60) {
+        let twentyMinutes: TimeInterval = 60 * 20
+        timer = ScheduleTimer(timeInterval: twentyMinutes) {
             URLSession.shared.dataTask(with: weatherURL) { (data, response, error) in
                 guard let data = data else {return}
                 guard let html = String(data: data, encoding: .utf8) else {return}
