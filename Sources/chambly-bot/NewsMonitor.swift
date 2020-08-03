@@ -7,6 +7,9 @@
 
 import Foundation
 import FeedKit
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 struct NewsMonitor {
     static private let feedURL = URL(string: "https://www.ville.chambly.qc.ca/feed/")!

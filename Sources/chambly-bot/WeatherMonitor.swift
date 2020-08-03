@@ -7,6 +7,9 @@
 
 import Foundation
 import SwiftSoup
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 struct WeatherMonitor {
     
