@@ -11,20 +11,26 @@ import FeedKit
 import FoundationNetworking
 #endif
 
-struct NewsMonitor {
-    static private let feedURL = URL(string: "https://www.ville.chambly.qc.ca/feed/")!
-    static private var prevArticles: [Article]?
+final class NewsMonitor {
+    private let feedURL = URL(string: "https://www.ville.chambly.qc.ca/feed/")!
+    private var prevArticles: [Article]?
     
-    static private var timer: ScheduleTimer?
+    private var timer: ScheduleTimer?
+    private let messagePusher: Notifiable
     
-    static func start() {
+    init(messagePusher: Notifiable) {
+        self.messagePusher = messagePusher
+        start()
+    }
+    
+    private func start() {
         let hour: TimeInterval = 60 * 60
         timer = ScheduleTimer(timeInterval: hour) {
-            fetchNews()
+            self.fetchNews()
         }
     }
     
-    static private func fetchNews() {
+    private func fetchNews() {
         FeedParser(URL: feedURL).parseAsync(queue: DispatchQueue.global(qos: .userInitiated)) { (result) in
             switch result {
             case .failure(let e):
@@ -32,27 +38,25 @@ struct NewsMonitor {
             case .success(let f):
                 guard let rssFeedItems = f.rssFeed?.items else { return }
                 let newArticles = rssFeedItems.compactMap { Article(title: $0.title, link: $0.link) }
-                if let prevArticles = prevArticles {
+                if let prevArticles = self.prevArticles {
                     let diff = newArticles.diff(from: prevArticles)
-                    print(diff.isEmpty ? "[News] No new ones" : "[News] Get new one")
-                    diff.forEach { pushToWeChat(title: $0.title, description: $0.link) }
+                    diff.forEach { self.messagePusher.notifyMe(title: $0.title, description: $0.link) }
                 }
-                prevArticles = newArticles
+                self.prevArticles = newArticles
             }
+        }
+    }
+    
+    struct Article: Equatable, Hashable {
+        let title: String
+        let link: String
+        
+        init?(title: String?, link: String?) {
+            guard let title = title, let link = link else {return nil}
+            self.title = title
+            self.link = link
         }
     }
 }
 
-struct Article {
-    let title: String
-    let link: String
-    
-    init?(title: String?, link: String?) {
-        guard let title = title, let link = link else {return nil}
-        self.title = title
-        self.link = link
-    }
-}
-
-extension Article: Equatable, Hashable { }
 

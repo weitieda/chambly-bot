@@ -10,15 +10,21 @@ import Foundation
 import FoundationNetworking
 #endif
 
-let key = "SCU54044T685f659ff69e1bcf38f06083b45369495d101bb3a4350"
+protocol Notifiable {
+    func notifyMe(title: String, description: String)
+}
 
-func pushToWeChat(title: String, description: String) {
-    let queryItems = [
-        URLQueryItem(name: "text", value: title),
-        URLQueryItem(name: "desp", value: description)
-    ]
-    var urlComps = URLComponents(string: "https://sc.ftqq.com/\(key).send")!
-    urlComps.queryItems = queryItems
-    let url = urlComps.url!
-    URLSession.shared.dataTask(with: url).resume()
+struct WechatPusher: Notifiable {
+    let key = "SCU54044T685f659ff69e1bcf38f06083b45369495d101bb3a4350"
+
+    func notifyMe(title: String, description: String) {
+        let queryItems = [
+            URLQueryItem(name: "text", value: title),
+            URLQueryItem(name: "desp", value: description)
+        ]
+        var urlComps = URLComponents(string: "https://sc.ftqq.com/\(key).send")!
+        urlComps.queryItems = queryItems
+        let url = urlComps.url!
+        URLSession.shared.dataTask(with: url).resume()
+    }
 }

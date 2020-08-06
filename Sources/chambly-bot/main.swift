@@ -5,7 +5,9 @@ import SwiftSoup
 import FoundationNetworking
 #endif
 
-NewsMonitor.start()
-WeatherMonitor.start()
+let wechat = WechatPusher()
+
+let news = NewsMonitor(messagePusher: wechat)
+let weather = WeatherMonitor(messagePusher: wechat)
 
 RunLoop.current.run()

@@ -11,17 +11,24 @@ import SwiftSoup
 import FoundationNetworking
 #endif
 
-struct WeatherMonitor {
+final class WeatherMonitor {
     
-    static private var timer: ScheduleTimer?
-    static let weatherURL = URL(string: "https://weather.gc.ca/city/pages/qc-58_metric_e.html")!
+    private var timer: ScheduleTimer?
+    private let weatherURL = URL(string: "https://weather.gc.ca/city/pages/qc-58_metric_e.html")!
     
-    static var prevWarning: String?
+    private var prevWarning: String?
     
-    static func start() {
+    private let messagePusher: Notifiable
+    
+    init(messagePusher: Notifiable) {
+        self.messagePusher = messagePusher
+        start()
+    }
+    
+    private func start() {
         let twentyMinutes: TimeInterval = 60 * 20
         timer = ScheduleTimer(timeInterval: twentyMinutes) {
-            URLSession.shared.dataTask(with: weatherURL) { (data, response, error) in
+            URLSession.shared.dataTask(with: self.weatherURL) { (data, response, error) in
                 guard let data = data else {return}
                 guard let html = String(data: data, encoding: .utf8) else {return}
                 do {
@@ -32,26 +39,14 @@ struct WeatherMonitor {
                     if let newWarning = warning {
                         if let previousWarning = self.prevWarning {
                             if newWarning != previousWarning {
-                                print("prev: \(previousWarning), now: \(newWarning)")
-                                pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
+                                self.messagePusher.notifyMe(title: newWarning, description: self.weatherURL.absoluteString)
                                 self.prevWarning = newWarning
                             }
                         } else {
-                            print("new warning: \(newWarning)")
-                            pushToWeChat(title: newWarning, description: weatherURL.absoluteString)
+                            self.messagePusher.notifyMe(title: newWarning, description: self.weatherURL.absoluteString)
                             self.prevWarning = newWarning
                         }
                     }
-//                    else {
-//                        if let previousWarning = self.prevWarning {
-//                            print("\(previousWarning) is gone.")
-//                            pushToWeChat(title: previousWarning + " 解除了" , description: "")
-//                            prevWarning = nil
-//                        } else {
-//                            print("nothing")
-//                            prevWarning = nil
-//                        }
-//                    }
                 } catch {
                     print(error)
                 }
