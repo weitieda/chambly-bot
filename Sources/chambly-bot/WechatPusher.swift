@@ -15,7 +15,7 @@ protocol Notifiable {
 }
 
 struct WechatPusher: Notifiable {
-    let key = "SCU54044T685f659ff69e1bcf38f06083b45369495d101bb3a4350"
+    let key = ""
 
     func notifyMe(title: String, description: String) {
         let queryItems = [
